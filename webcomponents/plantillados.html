@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de opciones</title>
+</head>
+<body>
+    <div id="container"></div>
+</body>
+<script>
+    console.log('Introducción a WebComponents');
+
+    class CreateTitle extends HTMLElement {
+        constructor() {
+            super();
+            this._title = document.createElement('h2');
+            this._title.innerText = "Selecciona una opción";
+        }
+
+        connectedCallback() {
+            this.appendChild(this._title);
+        }
+    }
+
+    class CreateButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Crear";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        _handleClick() {
+            const id = prompt("Ingrese el ID:");
+            const username = prompt("Ingrese el nombre de usuario:");
+            const saldo = prompt("Ingrese el saldo:");
+
+            const newData = {
+                id: id,
+                username: username,
+                saldo: saldo
+            };
+            console.log('Datos creados:', newData);
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+    }
+
+    class ListButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Listar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        _handleClick() {
+            fetch('cuentas.json')
+                .then(response => response.json())
+                .then(data => this._fillWith(data.cuentas))
+                .catch(error => console.error('Error fetching JSON:', error));
+        }
+
+        _fillWith(dataArray) {
+            const accountTable = document.querySelector('account-table');
+            accountTable.fillWith(dataArray);
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+    }
+
+    class AccountTable extends HTMLElement {
+        constructor() {
+            super();
+            this._table = document.createElement('table');
+            this._head = this._table.createTHead();
+            this._headRow = this._head.insertRow();
+            let col1 = this._headRow.insertCell();
+            let col2 = this._headRow.insertCell();
+            let col3 = this._headRow.insertCell();
+            col1.innerText = "ID";
+            col2.innerText = "Username";
+            col3.innerText = "Saldo";
+
+            this._tBody = this._table.createTBody();
+        }
+
+        fillWith(dataArray) {
+            this._tBody.innerHTML = "";
+            for (let item of dataArray) {
+                let row = this._tBody.insertRow();
+                let col1 = row.insertCell();
+                let col2 = row.insertCell();
+                let col3 = row.insertCell();
+                col1.innerText = item.id;
+                col2.innerText = item.username;
+                col3.innerText = item.saldo;
+            }
+        }
+
+        connectedCallback() {
+            this.appendChild(this._table);
+        }
+    }
+
+    class DeleteButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Eliminar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        _handleClick() {
+            const id = prompt("Ingrese el ID del elemento que desea eliminar:");
+            console.log("ID ingresado para eliminación:", id);
+            // Aquí puedes agregar la lógica para eliminar el elemento con el ID especificado.
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+    }
+
+    class UpdateButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Editar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        _handleClick() {
+            const id = prompt("Ingrese el ID:");
+            const username = prompt("Ingrese el nombre de usuario:");
+            const saldo = prompt("Ingrese el saldo:");
+            console.log("Datos actualizados:", { id, username, saldo });
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+    }
+
+    customElements.define('x-create-title', CreateTitle);
+    customElements.define('x-list-button', ListButton);
+    customElements.define('x-create-button', CreateButton);
+    customElements.define('x-update-button', UpdateButton);
+    customElements.define('x-delete-button', DeleteButton);
+    customElements.define('account-table', AccountTable);
+
+    const container = document.getElementById('container');
+
+    const createTitle = new CreateTitle();
+    container.appendChild(createTitle);
+
+    const listButton = new ListButton();
+    container.appendChild(listButton);
+
+    const createButton = new CreateButton();
+    container.appendChild(createButton);
+
+    const updateButton= new UpdateButton();
+    container.appendChild(updateButton);
+
+    const deleteButton = new DeleteButton();
+    container.appendChild(deleteButton);
+
+    const myTable = new AccountTable();
+    container.appendChild(myTable);
+</script>
+</html>
