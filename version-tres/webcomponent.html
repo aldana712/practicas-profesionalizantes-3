@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de opciones</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <div id="container"></div>
+</body>
+<script>
+    console.log('introduccion a web components');
+
+    class CreateTitle extends HTMLElement {
+        constructor() {
+            super();
+            this._title = document.createElement('h2');
+            this._title.innerText = "Selecciona una opción";
+        }
+
+        connectedCallback() {
+            this.appendChild(this._title);
+        }
+    }
+
+    class CreateButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Crear";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+
+        async _handleClick() {
+            const id = prompt("Ingrese el ID:");
+            const username = prompt("Ingrese el nombre de usuario:");
+            const saldo = prompt("Ingrese el saldo (formato: $100.00):");
+
+            const newData = {
+                id: id,
+                username: username,
+                saldo: saldo
+            };
+
+            console.log('Datos creados:', newData);
+
+            // Enviar datos al servidor
+            const response = await fetch('http://localhost/webcomponent/practicas-profesionalizantes-3/webcomponents/create.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newData)
+            });
+
+            const result = await response.text();
+            console.log(result);
+            alert(result);
+
+            // Actualizar la tabla de usuarios
+            document.querySelector('account-table').loadData();
+        }
+    }
+
+    class ListButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Listar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+
+        async _handleClick() {
+            const accountTable = document.querySelector('account-table');
+            accountTable.loadData();
+        }
+    }
+
+    class AccountTable extends HTMLElement {
+        constructor() {
+            super();
+            this._table = document.createElement('table');
+            this._head = this._table.createTHead();
+            this._headRow = this._head.insertRow();
+            let col1 = this._headRow.insertCell();
+            let col2 = this._headRow.insertCell();
+            let col3 = this._headRow.insertCell();
+            col1.innerText = "ID";
+            col2.innerText = "Username";
+            col3.innerText = "Saldo";
+
+            this._tBody = this._table.createTBody();
+        }
+
+        connectedCallback() {
+            this.appendChild(this._table);
+        }
+
+        fillWith(dataArray) {
+            this._tBody.innerHTML = "";
+            for (let item of dataArray) {
+                let row = this._tBody.insertRow();
+                let col1 = row.insertCell();
+                let col2 = row.insertCell();
+                let col3 = row.insertCell();
+                col1.innerText = item.id;
+                col2.innerText = item.username;
+                col3.innerText = item.saldo;
+            }
+        }
+
+        async loadData() {
+            const response = await fetch('http://localhost/webcomponent/practicas-profesionalizantes-3/webcomponents/list.php');
+            const data = await response.json();
+            this.fillWith(data);
+        }
+    }
+
+    class DeleteButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Eliminar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+        _handleClick() {
+            const id = prompt("Ingrese el ID del elemento que desea eliminar:");
+            console.log("ID ingresado para eliminación:", id);
+            
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+
+        async _handleClick() {
+            const id = prompt("Ingrese el ID del elemento que desea eliminar:");
+            if (id) {
+                console.log("ID ingresado para eliminación:", id);
+
+                try {
+                    const response = await fetch('http://localhost/webcomponent/practicas-profesionalizantes-3/webcomponents/delete.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id: id })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('El usuario ha sido eliminado correctamente.');
+                        
+                        document.querySelector('account-table').loadData();
+                    } else {
+                        alert('Error al eliminar el usuario: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Ocurrió un error al intentar eliminar el usuario.');
+                }
+            }
+        }
+    }
+
+    class UpdateButton extends HTMLElement {
+        constructor() {
+            super();
+            this._button = document.createElement('button');
+            this._button.innerText = "Editar";
+            this._button.addEventListener('click', this._handleClick.bind(this));
+        }
+
+        connectedCallback() {
+            this.appendChild(this._button);
+        }
+
+        async _handleClick() {
+            const id = prompt("Ingrese el ID:");
+            if (!id) {
+                alert('ID es requerido');
+                return;
+            }
+
+            const username = prompt("Ingrese el nombre de usuario:");
+            if (!username) {
+                alert('El nombre de usuario es requerido');
+                return;
+            }
+
+            const balance = prompt("Ingrese el saldo:");
+            if (!balance) {
+                alert('El saldo es requerido');
+                return;
+            }
+
+            if (isNaN(balance)) {
+                alert('El saldo debe ser un número');
+                return;
+            }
+
+            try {
+                
+                const response = await fetch('http://localhost/webcomponent/practicas-profesionalizantes-3/webcomponents/update.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id, username, balance })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Datos actualizados correctamente.');
+               
+                    document.querySelector('account-table').loadData();
+                } else {
+                    alert('Error al actualizar los datos: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error al enviar los datos: ' + error.message);
+            }
+        }
+    }
+
+    customElements.define('x-create-title', CreateTitle);
+    customElements.define('x-list-button', ListButton);
+    customElements.define('x-create-button', CreateButton);
+    customElements.define('x-update-button', UpdateButton);
+    customElements.define('x-delete-button', DeleteButton);
+    customElements.define('account-table', AccountTable);
+
+    const container = document.getElementById('container');
+
+    const createTitle = new CreateTitle();
+    container.appendChild(createTitle);
+
+    const listButton = new ListButton();
+    container.appendChild(listButton);
+
+    const createButton = new CreateButton();
+    container.appendChild(createButton);
+
+    const updateButton = new UpdateButton();
+    container.appendChild(updateButton);
+
+    const deleteButton = new DeleteButton();
+    container.appendChild(deleteButton);
+
+    const myTable = new AccountTable();
+    container.appendChild(myTable);
+</script>
+</html>
