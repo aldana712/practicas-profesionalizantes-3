@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<!--
+    HTML/CSS/JS Calculator to MVC WebComponent Migration Exercise
+    Example code for ISFT151 for Educational Purposes
+    Prácticas Profesionalizantes III
+
+    Copyright 2021-2024 mgsantiago <mgsantiago@protonmail.com>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+    MA 02110-1301, USA.
+-->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MVC WebComponent Activity</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .displayResult {
+            width: 100%;
+            height: 50px;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            text-align: right;
+            padding-right: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: #222;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        button {
+            width: 100%;
+            height: 50px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .numberButton {
+            background-color: #555;
+            color: #fff;
+        }
+
+        .numberButton:hover {
+            background-color: #777;
+        }
+
+        .operatorButton {
+            background-color: #00aaff;
+            color: #fff;
+        }
+
+        .operatorButton:hover {
+            background-color: #0088cc;
+        }
+
+        .clearButton {
+            background-color: #ff4444;
+            color: #fff;
+        }
+
+        .clearButton:hover {
+            background-color: #ff2222;
+        }
+
+        .calculateButton {
+            background-color: #ffaa00;
+            color: #fff;
+        }
+
+        .calculateButton:hover {
+            background-color: #cc8800;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input class="displayResult" id="display" type="text" value="" disabled>
+        <table>
+            <tr>
+                <td><button id="button7" class="numberButton">7</button></td>
+                <td><button id="button8" class="numberButton">8</button></td>
+                <td><button id="button9" class="numberButton">9</button></td>
+                <td><button id="buttonPlus" class="operatorButton">+</button></td>
+            </tr>
+            <tr>
+                <td><button id="button4" class="numberButton">4</button></td>
+                <td><button id="button5" class="numberButton">5</button></td>
+                <td><button id="button6" class="numberButton">6</button></td>
+                <td><button id="buttonMinus" class="operatorButton">-</button></td>
+            </tr>
+            <tr>
+                <td><button id="button3" class="numberButton">3</button></td>
+                <td><button id="button2" class="numberButton">2</button></td>
+                <td><button id="button1" class="numberButton">1</button></td>
+                <td><button id="buttonProduct" class="operatorButton">x</button></td>
+            </tr>
+            <tr>
+                <td><button id="button0" class="numberButton">0</button></td>
+                <td><button id="buttonDecimalPoint" class="numberButton">.</button></td>
+                <td><button id="buttonCalculate" class="calculateButton">=</button></td>
+                <td><button id="buttonDivision" class="operatorButton">/</button></td>
+            </tr>
+            <tr>
+                <td colspan="4"><button id="buttonClear" class="clearButton">BORRAR</button></td>
+            </tr>
+        </table>
+    </div>
+    <script type="text/javascript">
+        let display = document.getElementById("display");
+
+        let buttons = {
+            button0: document.getElementById("button0"),
+            button1: document.getElementById("button1"),
+            button2: document.getElementById("button2"),
+            button3: document.getElementById("button3"),
+            button4: document.getElementById("button4"),
+            button5: document.getElementById("button5"),
+            button6: document.getElementById("button6"),
+            button7: document.getElementById("button7"),
+            button8: document.getElementById("button8"),
+            button9: document.getElementById("button9"),
+            buttonPlus: document.getElementById("buttonPlus"),
+            buttonMinus: document.getElementById("buttonMinus"),
+            buttonProduct: document.getElementById("buttonProduct"),
+            buttonDivision: document.getElementById("buttonDivision"),
+            buttonDecimalPoint: document.getElementById("buttonDecimalPoint"),
+            buttonCalculate: document.getElementById("buttonCalculate"),
+            buttonClear: document.getElementById("buttonClear"),
+        };
+
+        for (let key in buttons) {
+            if (buttons.hasOwnProperty(key)) {
+                buttons[key].onclick = function() {
+                    handleButtonClick(key);
+                };
+            }
+        }
+
+        function handleButtonClick(key) {
+            if (key.startsWith("button")) {
+                let value = buttons[key].innerText;
+                if (value === "=") {
+                    calculate();
+                } else if (value === "BORRAR") {
+                    clearDisplay();
+                } else {
+                    updateDisplay(value);
+                }
+            }
+        }
+
+        function updateDisplay(value) {
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = "";
+        }
+
+        function calculate() {
+            try {
+                let result = eval(display.value.replace('x', '*'));
+                display.value = result;
+            } catch (e) {
+                display.value = "Error";
+            }
+        }
+    </script>
+</body>
+</html>
